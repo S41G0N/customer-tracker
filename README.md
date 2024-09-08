@@ -31,7 +31,7 @@ Controller přijímá požadavky a vrací odpovědi, ale nespravuje data. Data j
 ## Poznámky k projektu
 1. Nekonzistentní jazyk - Původně jsem psal kód v angličtině, jelikož jsem na to zvyklý. Nevěděl jsem však, kdo bude vypracovaný úkol číst, a tak jsem se v rámci projektu rozhodl změnit komentáře z angličtiny do češtiny.
 2. Vypracovaný task by měl splňovat úplně všechny úkoly včetně bonusů
-3. K interaktivní dokumentaci byl využit swagger
+3. K interaktivní dokumentaci byl využit swagger (http://localhost:<PORT>/api)
 4. Jako databázi jsem zvolil SQLite kvůli jednoduchosti nacházející se v data/customers.sqlite adresáři (v produkci je samozřejmě lepší použít něco robustnějšího)
 5. Přemýšlel jsem, zda nevytvořit dockerfile pro kontejnerizaci aplikace, nakonec jsem se rozhodl držet zadání a docker file jsem nevytvořil
 6. Commity se držely v1.0.0 standardů
