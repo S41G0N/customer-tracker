@@ -1,18 +1,37 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CustomerBasic, CustomerDetailed } from './customer.interface';
+import { faker } from '@faker-js/faker';
 
 @Injectable()
 export class DataService {
   // Store customers in a Map for quick lookup by ID
   private customers_mock_temporary_db = new Map<string, CustomerDetailed>();
 
-  // Test method
+  // Generace nahodnych zakazniku kazdy start
+  onModuleInit() {
+    this.generateRandomCustomers();
+  }
+
+  // Tvorba 50 nahodne generovanych zakazniku (ID je generovano dle cisla v poradi loopu, ale muze byt i jine)
+  private generateRandomCustomers() {
+    for (let i = 0; i < 50; i++) {
+      const customer: CustomerDetailed = {
+        id: `${i}`,
+        name: faker.person.fullName(),
+        email: faker.internet.email(),
+        address: faker.location.streetAddress(),
+      };
+      this.customers_mock_temporary_db.set(customer.id, customer);
+    }
+  }
+
+  // Jednoduchy test routu
   getHello(): string {
     return 'Hello World!';
   }
 
   listAllCustomers(): CustomerBasic[] {
-    // Convert Map to array and extract only id and name for each customer
+    // Loopne cely hashmap zakazniku a extrahuje id a jmeno kazdeho zaznamu
     const all_customers = Array.from(
       this.customers_mock_temporary_db.values(),
     ).map(({ id, name }) => ({
@@ -23,26 +42,25 @@ export class DataService {
     return all_customers;
   }
 
+  // Extrahuje detailni informace zakaznika podle ID
   getCustomerDetails(id: string): CustomerDetailed {
     const customer = this.customers_mock_temporary_db.get(id);
-    // Throw NotFoundException if customer not found
     if (!customer)
       throw new NotFoundException(`Customer with ID ${id} not found`);
     return customer;
   }
 
+  // Prida zakaznika do docasne databaze pokud se jedna o unikatni ID
   async createCustomer(customer: CustomerDetailed): Promise<string> {
     try {
-      // Check if customer already exists
+      // Hazi error pokud zakaznik jiz existuje (nelze mit 2 zakazniky se stejnym ID)
       if (this.customers_mock_temporary_db.has(customer.id)) {
         throw new Error(`Customer with ID ${customer.id} already exists`);
       }
 
-      // Additional business logic validation could go here if needed
+      // Muze se pridat vice checku a kontrol, nicmene pro jednoduchou logiku nechavam pouze check na duplcitni ID
 
-      // Add new customer to the 'customers_mock_temporary_db' hashmap
       this.customers_mock_temporary_db.set(customer.id, customer);
-
       return `Customer: ${customer.id} created successfully`;
     } catch (error) {
       console.error('Error creating customer:', error);
@@ -50,14 +68,14 @@ export class DataService {
     }
   }
 
+  // Aktualizuje zakaznika (podle ID) na zaklade novych informaci
   async updateCustomer(
     id: string,
     customerData: Partial<CustomerDetailed>,
   ): Promise<string> {
     try {
-      // Get existing customer, throws error if not found
-      const customer = await this.getCustomerDetails(id);
-      // Update customer data, merging new data with existing data
+      // Kontrola zda ID existuje
+      const customer = this.getCustomerDetails(id);
       this.customers_mock_temporary_db.set(id, {
         ...customer,
         ...customerData,
@@ -68,8 +86,10 @@ export class DataService {
     }
   }
 
+  // Smazani zakaznika z databaze podle ID
   async deleteCustomer(id: string): Promise<string> {
     try {
+      // Kontrola ID (nelze smazat neexistujiciho zakaznika)
       if (!this.customers_mock_temporary_db.has(id)) {
         throw new NotFoundException(`Customer with ID ${id} not found`);
       }
