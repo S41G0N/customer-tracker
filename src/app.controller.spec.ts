@@ -40,18 +40,18 @@ describe('AppController', () => {
   });
 
   describe('listAllCustomers', () => {
-    it('should return an array of customers', () => {
+    it('should return an array of customers', async () => {
       // Pripravime mock data
       const result: CustomerBasic[] = [{ id: '1', name: 'John' }];
       // Namockujeme metodu listAllCustomers DataService, aby vracela nase pripravena data
-      jest.spyOn(dataService, 'listAllCustomers').mockReturnValue(result);
+      jest.spyOn(dataService, 'listAllCustomers').mockResolvedValue(result);
       // Ocekavame, ze metoda controlleru vrati stejna data jako sluzba
-      expect(appController.listAllCustomers()).toBe(result);
+      expect(await appController.listAllCustomers()).toBe(result);
     });
   });
 
   describe('getCustomerDetails', () => {
-    it('should return customer details', () => {
+    it('should return customer details', async () => {
       // Pripravime mock detaily zakaznika
       const result: CustomerDetailed = {
         id: '1',
@@ -60,9 +60,9 @@ describe('AppController', () => {
         address: '123 Main St',
       };
       // Namockujeme metodu getCustomerDetails, aby vracela nase pripravena data
-      jest.spyOn(dataService, 'getCustomerDetails').mockReturnValue(result);
+      jest.spyOn(dataService, 'getCustomerDetails').mockResolvedValue(result);
       // Ocekavame, ze metoda controlleru vrati stejna data jako sluzba
-      expect(appController.getCustomerDetails('1')).toBe(result);
+      expect(await appController.getCustomerDetails('1')).toBe(result);
     });
   });
   describe('createCustomer', () => {
