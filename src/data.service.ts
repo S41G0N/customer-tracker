@@ -1,19 +1,27 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
 import { CustomerBasic, CustomerDetailed } from './customer.interface';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Customer } from './customer.entity';
 import { faker } from '@faker-js/faker';
 
 @Injectable()
-export class DataService {
-  // Store customers in a Map for quick lookup by ID
-  private customers_mock_temporary_db = new Map<string, CustomerDetailed>();
+export class DataService implements OnModuleInit {
+  constructor(
+    @InjectRepository(Customer)
+    private customerDatabase: Repository<Customer>,
+  ) {}
 
-  // Generace nahodnych zakazniku kazdy start
-  onModuleInit() {
-    this.generateRandomCustomers();
+  // Generace nahodnych zakazniku behem startu, pokud je sqlite databaze prazdna
+  async onModuleInit() {
+    const count = await this.customerDatabase.count();
+    if (count === 0) {
+      await this.generateRandomCustomers();
+    }
   }
 
   // Tvorba 50 nahodne generovanych zakazniku (ID je generovano dle cisla v poradi loopu, ale muze byt i jine)
-  private generateRandomCustomers() {
+  async generateRandomCustomers() {
     for (let i = 0; i < 50; i++) {
       const customer: CustomerDetailed = {
         id: `${i}`,
@@ -21,7 +29,7 @@ export class DataService {
         email: faker.internet.email(),
         address: faker.location.streetAddress(),
       };
-      this.customers_mock_temporary_db.set(customer.id, customer);
+      await this.customerDatabase.save(customer);
     }
   }
 
@@ -30,23 +38,18 @@ export class DataService {
     return 'Hello World!';
   }
 
-  listAllCustomers(): CustomerBasic[] {
-    // Loopne cely hashmap zakazniku a extrahuje id a jmeno kazdeho zaznamu
-    const all_customers = Array.from(
-      this.customers_mock_temporary_db.values(),
-    ).map(({ id, name }) => ({
-      id,
-      name,
-    }));
-
-    return all_customers;
+  // Loopne cely hashmap zakazniku a extrahuje id a jmeno kazdeho zaznamu
+  async listAllCustomers(): Promise<CustomerBasic[]> {
+    const customers = await this.customerDatabase.find();
+    return customers.map(({ id, name }) => ({ id, name }));
   }
 
   // Extrahuje detailni informace zakaznika podle ID
-  getCustomerDetails(id: string): CustomerDetailed {
-    const customer = this.customers_mock_temporary_db.get(id);
-    if (!customer)
+  async getCustomerDetails(id: string): Promise<CustomerDetailed> {
+    const customer = await this.customerDatabase.findOne({ where: { id } });
+    if (!customer) {
       throw new NotFoundException(`Customer with ID ${id} not found`);
+    }
     return customer;
   }
 
@@ -54,13 +57,14 @@ export class DataService {
   async createCustomer(customer: CustomerDetailed): Promise<string> {
     try {
       // Hazi error pokud zakaznik jiz existuje (nelze mit 2 zakazniky se stejnym ID)
-      if (this.customers_mock_temporary_db.has(customer.id)) {
+      const existingCustomer = await this.customerDatabase.findOne({
+        where: { id: customer.id },
+      });
+      if (existingCustomer) {
         throw new Error(`Customer with ID ${customer.id} already exists`);
       }
-
       // Muze se pridat vice checku a kontrol, nicmene pro jednoduchou logiku nechavam pouze check na duplcitni ID
-
-      this.customers_mock_temporary_db.set(customer.id, customer);
+      await this.customerDatabase.save(customer);
       return `Customer: ${customer.id} created successfully`;
     } catch (error) {
       console.error('Error creating customer:', error);
@@ -75,8 +79,8 @@ export class DataService {
   ): Promise<string> {
     try {
       // Kontrola zda ID existuje
-      const customer = this.getCustomerDetails(id);
-      this.customers_mock_temporary_db.set(id, {
+      const customer = await this.getCustomerDetails(id);
+      await this.customerDatabase.update(id, {
         ...customer,
         ...customerData,
       });
@@ -90,13 +94,14 @@ export class DataService {
   async deleteCustomer(id: string): Promise<string> {
     try {
       // Kontrola ID (nelze smazat neexistujiciho zakaznika)
-      if (!this.customers_mock_temporary_db.has(id)) {
+      const result = await this.customerDatabase.delete(id);
+      if (result.affected === 0) {
         throw new NotFoundException(`Customer with ID ${id} not found`);
       }
-      this.customers_mock_temporary_db.delete(id);
       return `Customer: ${id} deleted successfully`;
     } catch (error) {
       throw new Error(`Failed to delete customer: ${error.message}`);
     }
   }
 }
+

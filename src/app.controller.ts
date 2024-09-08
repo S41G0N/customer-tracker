@@ -16,21 +16,25 @@ import { DataService } from './data.service';
 export class AppController {
   constructor(private readonly dataService: DataService) {}
 
+  // Ziskat uvitaci zpravu
   @Get()
   getHello(): string {
     return this.dataService.getHello();
   }
 
+  // Ziskat seznam vsech zakazniku
   @Get('customers')
-  listAllCustomers(): CustomerBasic[] {
+  async listAllCustomers(): Promise<CustomerBasic[]> {
     return this.dataService.listAllCustomers();
   }
 
+  // Ziskat podrobnosti o zakaznikovi podle ID
   @Get('customers/:id')
-  getCustomerDetails(@Param('id') id: string): CustomerDetailed {
+  async getCustomerDetails(@Param('id') id: string): Promise<CustomerDetailed> {
     return this.dataService.getCustomerDetails(id);
   }
 
+  // Vytvorit noveho zakaznika (vyzaduje vsechny informace)
   @Post('customers')
   async createCustomer(
     @Body() customer: CustomerDetailed,
@@ -43,6 +47,7 @@ export class AppController {
     }
   }
 
+  // Aktualizovat zakaznika podle ID a novych informaci
   @Put('customers/:id')
   async updateCustomer(
     @Param('id') id: string,
@@ -56,6 +61,7 @@ export class AppController {
     }
   }
 
+  // Smazat zakaznika podle ID
   @Delete('customers/:id')
   async deleteCustomer(@Param('id') id: string): Promise<{ message: string }> {
     try {
@@ -66,3 +72,4 @@ export class AppController {
     }
   }
 }
+
