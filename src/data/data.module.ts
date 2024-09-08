@@ -1,7 +1,7 @@
 // src/data/data.module.ts
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Customer } from './customer.entity';
+import { Customer } from '../customers/customer.entity';
 import { DataService } from './data.service';
 
 @Module({

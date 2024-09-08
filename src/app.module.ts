@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
-import { DataModule } from './data.module';
-import { Customer } from './customer.entity';
+import { DataModule } from './data/data.module';
+import { Customer } from './customers/customer.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
@@ -21,4 +21,3 @@ import { TypeOrmModule } from '@nestjs/typeorm';
   controllers: [AppController], // Registrace hlavniho controlleru
 })
 export class AppModule {}
-

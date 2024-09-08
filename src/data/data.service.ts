@@ -1,9 +1,12 @@
 import { Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
-import { CustomerBasic, CustomerDetailed } from './customer.interface';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Customer } from './customer.entity';
+import { Customer } from '../customers/customer.entity';
 import { faker } from '@faker-js/faker';
+import {
+  CustomerBasic,
+  CustomerDetailed,
+} from '../customers/customer.interface';
 
 @Injectable()
 export class DataService implements OnModuleInit {
@@ -104,4 +107,3 @@ export class DataService implements OnModuleInit {
     }
   }
 }
-

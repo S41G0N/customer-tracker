@@ -1,3 +1,5 @@
+import { DataService } from './data/data.service';
+
 import {
   Controller,
   Get,
@@ -9,8 +11,11 @@ import {
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
-import { CustomerBasic, CustomerDetailed } from './customer.interface';
-import { DataService } from './data.service';
+
+import {
+  CustomerBasic,
+  CustomerDetailed,
+} from './customers/customer.interface';
 
 @Controller()
 export class AppController {
@@ -72,4 +77,3 @@ export class AppController {
     }
   }
 }
-
